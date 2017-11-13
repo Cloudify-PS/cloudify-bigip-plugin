@@ -1,0 +1,48 @@
+########
+# Copyright (c) 2017 GigaSpaces Technologies Ltd. All rights reserved
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+#    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    * See the License for the specific language governing permissions and
+#    * limitations under the License.
+
+plugins:
+  bigip:
+    package_name: cloudify-bigip-plugin
+    package_version: '1.0'
+    executor: central_deployment_agent
+
+node_types:
+  cloudify.bigip.BigIP:
+    derived_from: cloudify.nodes.Root
+    properties:
+      ip:
+        type: string
+        description: >
+          IP of the BIG IP instance
+      user:
+        type: string
+        description: >
+          User used to login to BIG IP instance
+      password:
+        type: string
+        description: >
+          Password used to login to BIG IP instance
+    interfaces:
+      cluster.operations:
+        sync:
+          implementation: bigip.bigip_plugin.bigip_sync.sync
+          inputs:
+            sync_group:
+              type: string
+              default: ''
+            retry_timer:
+              type: integer
+              default: 10

@@ -1,0 +1,78 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/4.1.1.1/types.yaml
+  - plugins/cloudify-iworkflow-plugin/plugin.yaml
+  - plugins/cloudify-bigip-plugin/plugin.yaml
+
+inputs:
+  iworkflow_ip:
+    default: ''
+  iworkflow_port:
+    default: ''
+  iworkflow_user:
+    default: ''
+  iworkflow_password:
+    default: ''
+  iworkflow_use_ssl:
+    default: True
+  bigip_ip:
+    default: ''
+  bigip_sync_group:
+    default: ''
+  bigip_user:
+    default: ''
+  bigip_password:
+    default: ''
+  tenant_name:
+    default: ''
+  template_name:
+    default: ''
+  service_name:
+    default: ''
+  vars:
+    default: []
+  tables:
+    default: []
+  properties:
+    default: []
+
+node_templates:
+
+  iworkflow:
+    type: cloudify.iworkflow.iWorkflow
+    properties:
+      ip: { get_input: iworkflow_ip }
+      port: { get_input: iworkflow_port }
+      user: { get_input: iworkflow_user }
+      password: { get_input: iworkflow_password }
+      use_ssl: { get_input: iworkflow_use_ssl }
+
+  bigip:
+    type: cloudify.bigip.BigIP
+    properties:
+      ip: { get_input: bigip_ip }
+      user: { get_input: bigip_user }
+      password: { get_input: bigip_password }
+
+  basic_service:
+    type: cloudify.iworkflow.Service
+    properties:
+      tenant_name: { get_input: tenant_name }
+      template_name: { get_input: template_name }
+      service_name: { get_input: service_name }
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: iworkflow.iworkflow_plugin.service.create_service
+          inputs:
+            vars: { get_input: vars }
+            tables: { get_input: tables }
+            properties: { get_input: properties }
+            reference_hostname: localhost
+            retry_interval: 10
+        delete:
+          implementation: iworkflow.iworkflow_plugin.service.delete_service
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: iworkflow

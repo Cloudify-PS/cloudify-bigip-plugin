@@ -1,0 +1,7 @@
+# Here, place the link to the minimum version of cloudify-plugins-common
+# that is acceptable by the plugin. This should be the value specified
+# in setup.py.
+git+https://github.com/cloudify-cosmo/cloudify-plugins-common@4.1#egg=cloudify-plugins-common==4.1
+testtools
+mock
+requests-mock
