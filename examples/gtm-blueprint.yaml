@@ -1,0 +1,92 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/4.3/types.yaml
+  - plugin.yaml
+
+inputs:
+
+  # Connection Required inputs Fot GTM Connection
+  gtm_ip:
+    type: string
+    description: >
+      This represent the host url for GTM server
+
+  gtm_user:
+    type: string
+    description: >
+      This represent the user name used to access the GTM server
+
+  gtm_password:
+    type: string
+    description: >
+      This represent the password used to access the GTM server
+
+  # Required GTM Server Name needs in order to add virtual server for
+  gtm_server_name:
+    type: string
+    description: >
+      This represent the LTM server name required to add virtual servers
+
+  # Optional partition input, the default value will be Common
+  gtm_partition:
+    type: string
+    description: >
+      This represent the GTM partition used
+    default: 'Common'
+
+  # Optional record_type input, the default value will be a
+  gtm_record_type:
+    type: string
+    description: >
+      This represent the GTM record type used.
+    default: 'a'
+
+  # GTM Virtual Server Inputs
+  gtm_virtual_server_config:
+    description: |
+      Payload required to create virtual server.
+    required: true
+    default: {}
+
+  # GTM Pool Config Inputs
+  gtm_pool_config:
+    description: |
+      Payload required to create pool.
+    required: true
+    default: {}
+
+  # GTM Pool Member Config Inputs
+  gtm_pool_member_config:
+    description: |
+      Payload required to represent pool member.
+    required: true
+    default: {}
+
+  # GTM Wip Config Inputs
+  gtm_wip_config:
+    description: |
+      Payload required to create wip.
+    required: true
+    default: {}
+
+
+node_templates:
+
+  gtm_load_balancer:
+    type: cloudify.nodes.bigip.gtm.DNSLoadBalancer
+    properties:
+      ip: { get_input: gtm_ip }
+      user: { get_input: gtm_user }
+      password: { get_input: gtm_password }
+      partition: { get_input: gtm_partition }
+      record_type: { get_input: gtm_record_type }
+      gtm_server: { get_input: gtm_server_name }
+      virtual_server_config:
+        kwargs: { get_input: gtm_virtual_server_config }
+      pool_config:
+        kwargs: { get_input: gtm_pool_config }
+      pool_member_config:
+        kwargs: { get_input: gtm_pool_member_config }
+      wip_config:
+        kwargs: { get_input: gtm_wip_config }

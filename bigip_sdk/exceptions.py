@@ -16,3 +16,19 @@
 
 class BigipSyncException(Exception):
     pass
+
+
+class BigipRestError(Exception):
+    pass
+
+
+class BigipAuthError(Exception):
+    pass
+
+
+class GTMAPIException(Exception):
+    pass
+
+
+class GTMConnectionErrorException(Exception):
+    pass

@@ -41,8 +41,14 @@ def sync(sync_group,
                         .format(ip, sync_group))
 
         bigip.do_sync(ip, sync_group, user, password, retry_timer)
-    except Exception:
+    except Exception as e:
         _, exc_value, exc_traceback = sys.exc_info()
         raise NonRecoverableError(
-            "Failed syncing BIG IP with ip '{0}'".format(ip),
-            causes=[exception_to_error_cause(exc_value, exc_traceback)])
+            "Failed to install certificate on {load_balancer}. "
+            "{exception_type} {message}".format(
+                load_balancer=ip,
+                exception_type=type(e),
+                message=e.message,
+            ),
+            causes=[exception_to_error_cause(exc_value, exc_traceback)]
+        )

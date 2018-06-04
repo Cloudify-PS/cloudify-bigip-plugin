@@ -16,10 +16,56 @@
 plugins:
   bigip:
     package_name: cloudify-bigip-plugin
-    package_version: '1.0'
+    source: cloudify-bigip-plugin
+    package_version: '2.0'
     executor: central_deployment_agent
 
+
+data_types:
+  cloudify.datatypes.bigip.gtm.VirtualServer:
+    properties:
+      kwargs:
+        description: Payload required to create virtual server
+        default: {}
+
+  cloudify.datatypes.bigip.gtm.Pool:
+    properties:
+      kwargs:
+        description: Payload required to create pool
+        default: {}
+
+  cloudify.datatypes.bigip.gtm.PoolMember:
+    properties:
+      kwargs:
+        description: Payload required to represent pool member
+        default: {}
+
+  cloudify.datatypes.bigip.gtm.Wip:
+    properties:
+      kwargs:
+        description: Payload required to create wip
+        default: {}
+
+dsl_definitions:
+
+  partition_desc: &partition_desc >
+    The GTM partition used.
+
+  gtm_server_desc: &gtm_server_desc >
+    The LTM server name used.
+
+  record_type_desc: &record_type_desc >
+    The record type used.
+
+  # GTM Record Type.
+  record_type: &record_type
+    description: *record_type_desc
+    type: string
+    required: true
+
+
 node_types:
+
   cloudify.bigip.BigIP:
     derived_from: cloudify.nodes.Root
     properties:
@@ -46,3 +92,114 @@ node_types:
             retry_timer:
               type: integer
               default: 10
+
+  cloudify.bigip.Certificate:
+    derived_from: cloudify.nodes.Root
+    properties:
+      ip:
+        type: string
+        description: >
+          IP of the BIG IP instance
+      user:
+        type: string
+        description: >
+          User used to login to BIG IP instance
+      password:
+        type: string
+        description: >
+          Password used to login to BIG IP instance
+      name:
+        type: string
+        description: >
+          Common name of certificate
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: bigip.bigip_plugin.bigip_cert.install_cert
+          inputs:
+            key:
+              type: string
+              default: ''
+            cert:
+              type: string
+              default: ''
+        delete:
+          implementation: bigip.bigip_plugin.bigip_cert.delete_cert
+
+  cloudify.nodes.bigip.gtm.DNSLoadBalancer:
+    derived_from: cloudify.nodes.Root
+    properties:
+      ip:
+        type: string
+        description: >
+          IP of the BIG IP GTM instance
+      user:
+        type: string
+        description: >
+          User used to login to BIG IP GTM instance
+      password:
+        type: string
+        description: >
+          Password used to login to BIG IP GTM instance
+      partition:
+        description: *partition_desc
+        type: string
+        required: true
+      gtm_server:
+        description: *gtm_server_desc
+        type: string
+        required: true
+      record_type:
+        description: *record_type_desc
+        type: string
+        required: true
+      virtual_server_config:
+        description: >
+          Configuration key-value data to be passed as-is in order to create
+           the virtual server resource, this require checking the F5 GTM
+           Documentation in order to pass the payload needed for the virtual server
+        type: cloudify.datatypes.bigip.gtm.VirtualServer
+        required: true
+      pool_config:
+        description: >
+          Configuration key-value data to be passed as-is in order to create
+           the GTM server pool, this require checking the F5 GTM
+           Documentation in order to pass the payload needed for the pool
+        type: cloudify.datatypes.bigip.gtm.Pool
+        required: true
+      pool_member_config:
+        description: >
+          Configuration key-value data to be passed as-is in order to add
+           the virtual server to pool, this require checking the F5 GTM
+           Documentation in order to pass the payload needed for the pool
+           member
+        type: cloudify.datatypes.bigip.gtm.PoolMember
+        required: true
+      wip_config:
+        description: >
+          Configuration key-value data to be passed as-is in order to create
+           the GTM wip ip, this require checking the F5 GTM
+           Documentation in order to pass the payload needed for the wip
+        type: cloudify.datatypes.bigip.gtm.Wip
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: bigip.bigip_plugin.bigip_gtm.create_dns_loadbalancer
+          inputs:
+           partition:
+             default: { get_property: [SELF, partition]}
+           gtm_server:
+             default: { get_property: [SELF, gtm_server]}
+           record_type:
+             default: { get_property: [SELF, record_type]}
+           virtual_server_config:
+             default: { get_property: [SELF, virtual_server_config]}
+           pool_config:
+             default: { get_property: [SELF, pool_config]}
+           pool_member_config:
+             default: { get_property: [SELF, pool_member_config]}
+           wip_config:
+             default: { get_property: [SELF, wip_config]}
+        delete:
+          implementation: bigip.bigip_plugin.bigip_gtm.delete_dns_loadbalancer

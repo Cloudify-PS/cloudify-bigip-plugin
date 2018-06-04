@@ -1,0 +1,48 @@
+
+# GTM Connection Server
+gtm_ip: '10.244.0.36'
+gtm_user: 'admin'
+gtm_password: 'admin'
+
+# GTM Config
+gtm_server_name: 'SDLAB-GEN-LTM'
+gtm_partition: 'Common'
+gtm_record_type: 'a'
+
+# GTM Virtual Server Inputs
+gtm_virtual_server_config:
+  - destination: '10.244.51.11:443'
+    name: 'vs3'
+    translationAddress: 'none'
+  - destination: '10.244.51.14:443'
+    name: 'vs4'
+    translationAddress: 'none'
+
+# GTM Pool Config Inputs
+gtm_pool_config:
+  alternateMode: 'round-robin'
+  fallbackIp: 'any'
+  fallbackMode: 'return-to-dns'
+  loadBalancingMode: 'round-robin'
+  manualResume: 'disabled'
+  name: 'pool-test'
+  ttl: 0
+  partition: 'Common'
+
+# GTM Pool Member Config Inputs
+gtm_pool_member_config:
+  - memberOrder: 0
+    name: 'vs3'
+    partition: 'Common'
+  - memberOrder: 1
+    name: 'vs4'
+    partition: 'Common'
+
+# GTM Wip Config Inputs
+gtm_wip_config:
+  name: 'test-wip01.local'
+  persistence: 'enabled'
+  ttlPersistence: '3600'
+  pools:
+   - name: 'pool-test'
+     partition: 'Common'

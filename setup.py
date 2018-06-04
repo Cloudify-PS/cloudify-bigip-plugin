@@ -19,7 +19,7 @@ from setuptools import setup
 
 setup(
     name='cloudify-bigip-plugin',
-    version='1.0',
+    version='2.0',
     author='Cloudify',
     author_email='hello@cloudify.co',
     license='LICENSE',
